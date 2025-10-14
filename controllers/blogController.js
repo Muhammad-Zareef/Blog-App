@@ -1,10 +1,7 @@
 
-const express = require('express');
-const router = express.Router();
-
 const Blog = require('../models/blogModel');
 
-router.get('/blogs', async (req, res) => {
+const getBlogs = async (req, res) => {
     try {
         const users = await Blog.find();
         res.status(200).json(users);
@@ -14,9 +11,9 @@ router.get('/blogs', async (req, res) => {
             message: err.message,
         });
     }
-});
+}
 
-router.post('/postBlog', async (req, res) => {
+const createBlog = async (req, res) => {
     try {
         const {title, author, desc, uid} = req.body;
         const newBlog = new Blog({title, author, desc, uid});
@@ -31,6 +28,6 @@ router.post('/postBlog', async (req, res) => {
             message: err.message,
         });
     }
-});
+}
 
-module.exports = router;
+module.exports = { getBlogs, createBlog };

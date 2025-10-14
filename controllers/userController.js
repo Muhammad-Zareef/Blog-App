@@ -1,12 +1,9 @@
 
-const express = require('express');
-const router = express.Router();
+const User = require('../models/userModel');
 const hashy = require('hashy');
 const saltRounds = 10;
 
-const User = require('../models/userModel');
-
-router.get('/users', async (req, res) => {
+const getUsers = async (req, res) => {
     try {
         const users = await User.find();
         res.status(200).json(users);
@@ -16,9 +13,9 @@ router.get('/users', async (req, res) => {
             message: err.message,
         });
     }
-});
+}
 
-router.post('/login', async (req, res) => {
+const login = async (req, res) => {
     try {
         const { loginEmail, loginPassword } = req.body;
         const user = await User.findOne({ email: loginEmail });
@@ -45,9 +42,9 @@ router.post('/login', async (req, res) => {
             message: 'User not found',
         });
     }
-});
+}
 
-router.post('/signup', async (req, res) => {
+const signup = async (req, res) => {
     try {
         const { fullName, email, password } = req.body;
         const isFound = await User.findOne({ email });
@@ -76,6 +73,6 @@ router.post('/signup', async (req, res) => {
             message: err.message,
         });
     }
-});
+}
 
-module.exports = router;
+module.exports = {getUsers, login, signup};
