@@ -38,31 +38,40 @@ const getBlogsData = async () => {
 function renderBlogs(blogs) {
     let blogPostsContainer = document.getElementById("blogPosts");
     blogPostsContainer.innerHTML = "";
-    for (let i = 0; i < blogs.length; i++) {
+    let hasPosts = false;
+    for (let i = blogs.length-1; i >= 0; i--) {
         if (blogs[i].uid === uid) {
-        blogPostsContainer.innerHTML += `
-            <div class="col-md-6 col-lg-4">
-                <div class="card blog-card">
-                    <div class="card-header">
-                        <h5 class="card-title text-white mb-0">${blogs[i].title}</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted"><i class="fas fa-user me-2"></i>By ${blogs[i].author}</p>
-                        <p class="card-text">${blogs[i].desc}</p>
-                    </div>
-                    <div class="card-footer bg-white">
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted"><i class="fas fa-clock me-1"></i>${new Date(blogs[i].createdAt).toLocaleString()}</small>
-                            <div>
-                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-thumbs-up"></i></button>
-                                <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-comment"></i></button>
+            hasPosts = true;
+            blogPostsContainer.innerHTML += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card blog-card">
+                        <div class="card-header">
+                            <h5 class="card-title text-white mb-0">${blogs[i].title}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted"><i class="fas fa-user me-2"></i>By ${blogs[i].author}</p>
+                            <p class="card-text">${blogs[i].desc}</p>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted"><i class="fas fa-clock me-1"></i>${new Date(blogs[i].createdAt).toLocaleString()}</small>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit" title="Edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash delete-btn" title="Delete"></i></button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            `;
+        }
+    }
+    if (!hasPosts) {
+        blogPostsContainer.innerHTML = `
+            <div class="col-12 text-center my-5">
+                <h4 class="text-muted">You haven’t published any blog posts yet</h4>
             </div>
         `;
-        }
     }
 }
 

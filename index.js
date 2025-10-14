@@ -1,14 +1,14 @@
 
 const express = require('express');
 const app = express();
-const connectDB = require('./db');
-const userRoutes = require('./routes/users');
-const blogRoutes = require('./routes/blogs');
+const connectDB = require('./config/db');
+const userRoutes = require('./routes/userRoutes');
+const blogRoutes = require('./routes/blogRoutes');
 const path = require('path');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
-// Load
+// load
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
@@ -25,5 +25,5 @@ app.use('/api', userRoutes);
 app.use('/api', blogRoutes);
 
 app.listen(PORT, () => {
-    console.log("Server is Running");
+    console.log("Blog App is Running");
 });
