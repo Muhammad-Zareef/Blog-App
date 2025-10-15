@@ -8,7 +8,7 @@ const getBlogs = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             success: false,
-            message: err.message,
+            message: "Internal Server Error"
         });
     }
 }
@@ -25,9 +25,42 @@ const createBlog = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             success: false,
-            message: err.message,
+            message: "Internal Server Error"
         });
     }
 }
 
-module.exports = { getBlogs, createBlog };
+const updateBlog = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {title, author, desc} = req.body;
+        const updatedBlog = await Blog.findByIdAndUpdate(id, {title, author, desc}, {new: true});
+        res.status(200).json({
+            message: "Blog updated successfully!",
+            updatedBlog
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+
+const deleteBlog = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedBlog = await Blog.findByIdAndDelete(id);
+        res.status(200).json({
+            message: "Blog deleted successfully",
+            deletedBlog
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+
+module.exports = { getBlogs, createBlog, updateBlog, deleteBlog };

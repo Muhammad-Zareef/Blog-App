@@ -35,6 +35,52 @@ const getBlogsData = async () => {
     }
 }
 
+const openUpdateModal = (id, title, author, description) => {
+    document.getElementById('postId').value = id;
+    document.getElementById('postTitle').value = title;
+    document.getElementById('postAuthor').value = author;
+    document.getElementById('postDescription').value = description;
+    const updateModal = new bootstrap.Modal(document.getElementById('updatePostModal'));
+    updateModal.show();
+}
+
+const updateBlog = async () => {
+    const focusedElement = document.activeElement;
+    if (focusedElement && focusedElement.closest('#updatePostModal')) {
+        focusedElement.blur();
+    }
+    try {
+        const id = document.getElementById('postId').value;
+        const title = document.getElementById('postTitle').value;
+        const author = document.getElementById('postAuthor').value;
+        const desc = document.getElementById('postDescription').value;
+        if (!title || !author || !desc) {
+            alert('Please fill in all fields');
+            return;
+        }
+        const updateModal = bootstrap.Modal.getInstance(document.getElementById('updatePostModal'));
+        updateModal.hide();
+        const res = await axios.put(`http://localhost:3000/api/updateBlog/${id}`, {title, author, desc});
+        getBlogsData();
+        alert(res.data.message);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const deleteBlog = async (id) => {
+    try {
+        let isConfirm = confirm('Are you sure you want to delete this Blog?');
+        if (!isConfirm) {
+            return;
+        }
+        const res = await axios.delete(`http://localhost:3000/api/deleteBlog/${id}`);
+        getBlogsData();
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 function renderBlogs(blogs) {
     let blogPostsContainer = document.getElementById("blogPosts");
     blogPostsContainer.innerHTML = "";
@@ -56,8 +102,8 @@ function renderBlogs(blogs) {
                             <div class="d-flex justify-content-between">
                                 <small class="text-muted"><i class="fas fa-clock me-1"></i>${new Date(blogs[i].createdAt).toLocaleString()}</small>
                                 <div>
-                                    <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit" title="Edit"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash delete-btn" title="Delete"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="openUpdateModal('${blogs[i]._id}', '${blogs[i].title}', '${blogs[i].author}', '${blogs[i].desc}')"><i class="fas fa-edit" title="Edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBlog('${blogs[i]._id}')"><i class="fas fa-trash delete-btn" title="Delete"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -88,8 +134,8 @@ document.getElementById('blogForm').addEventListener('submit', async function (e
         }
         const res = await axios.post('http://localhost:3000/api/postBlog', { title, author, desc, uid });
         this.reset();
-        alert("Blog posted successfully!");
         getBlogsData();
+        alert("Blog posted successfully!");
     } catch (error) {
         console.log(error);
     }

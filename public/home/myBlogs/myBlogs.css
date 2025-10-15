@@ -95,3 +95,16 @@ body {
     -webkit-text-fill-color: transparent;
     margin-right: 10px;
 }
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+.input-group-text {
+    background-color: #e9ecef;
+}
