@@ -55,27 +55,52 @@ const updateBlog = async () => {
         const author = document.getElementById('postAuthor').value;
         const desc = document.getElementById('postDescription').value;
         if (!title || !author || !desc) {
-            alert('Please fill in all fields');
+            Swal.fire({
+                icon: "error",
+                title: "Missing Information!",
+                text: "Please fill in all required fields"
+            });
             return;
         }
         const updateModal = bootstrap.Modal.getInstance(document.getElementById('updatePostModal'));
         updateModal.hide();
         const res = await axios.put(`http://localhost:3000/api/updateBlog/${id}`, {title, author, desc});
+        Swal.fire({
+            title: "Updated Successfully",
+            text: "Your changes have been saved",
+            icon: "success",
+            showConfirmButton: false,
+            timer: 2000
+        });
         getBlogsData();
-        alert(res.data.message);
     } catch (error) {
         console.log(error);
     }
 }
 
-const deleteBlog = async (id) => {
+const deleteBlog = (id) => {
     try {
-        let isConfirm = confirm('Are you sure you want to delete this Blog?');
-        if (!isConfirm) {
-            return;
-        }
-        const res = await axios.delete(`http://localhost:3000/api/deleteBlog/${id}`);
-        getBlogsData();
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This blog post will be permanently deleted",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const res = await axios.delete(`http://localhost:3000/api/deleteBlog/${id}`);
+                Swal.fire({
+                    title: "Deleted!",
+                    text: "The blog post has been successfully deleted",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                getBlogsData();
+            }
+        });
     } catch (error) {
         console.log(error);
     }
@@ -128,14 +153,24 @@ document.getElementById('blogForm').addEventListener('submit', async function (e
         let author = document.getElementById("blogAuthor").value;
         let desc = document.getElementById("blogDescription").value;
         if (title.trim() == "" || author.trim() == "" || desc.trim() == "") {
-            alert("Please fill out fields.");
+            Swal.fire({
+                icon: "error",
+                title: "Missing Information!",
+                text: "Please fill in all required fields"
+            });
             this.reset();
             return;
         }
         const res = await axios.post('http://localhost:3000/api/postBlog', { title, author, desc, uid });
-        this.reset();
+        Swal.fire({
+            title: "Blog Published!",
+            text: "Your blog post has been published successfully",
+            icon: "success",
+            showConfirmButton: false,
+            timer: 2000
+        });
         getBlogsData();
-        alert("Blog posted successfully!");
+        this.reset();
     } catch (error) {
         console.log(error);
     }
