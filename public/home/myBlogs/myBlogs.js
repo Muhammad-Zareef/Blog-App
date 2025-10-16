@@ -177,6 +177,15 @@ document.getElementById('blogForm').addEventListener('submit', async function (e
 });
 
 const logout = () => {
-    location = '../../index.html';
+    Swal.fire({
+        title: "Logged Out!",
+        text: "You have been successfully logged out",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 1100
+    });
+    setTimeout(() => {
+        location = '../../index.html';
+    }, 1000);
     localStorage.removeItem("UID");
 }

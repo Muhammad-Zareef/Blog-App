@@ -63,6 +63,15 @@ const renderBlogs = blogs => {
 }
 
 const logout = () => {
-    location = '../index.html';
+    Swal.fire({
+        title: "Logged Out!",
+        text: "You have been successfully logged out",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 1500
+    });
+    setTimeout(() => {
+        location = '../index.html';
+    }, 1400);
     localStorage.removeItem("UID");
 }
