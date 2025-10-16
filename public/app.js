@@ -1,19 +1,28 @@
 
+let notyf = new Notyf({
+    position: {
+        x: 'left',
+        y: 'bottom'
+    }
+});
+
 async function signup() {
     try {
         let fullName = document.getElementById("fullName").value;
         let email = document.getElementById("email").value;
         let password = document.getElementById("password").value;
         if (fullName.trim() == "" || email.trim() == "" || password.trim() == "") {
-            alert("Please fill out fields");
+            notyf.error("Please fill out fields");
             return;
         }
         const res = await axios.post('http://localhost:3000/api/signup', { fullName, email, password });
         if (res.data.status == 200) {
-            alert("Account created successfully");
-            showForm('login');
+            setTimeout(() => {
+                showForm('login');
+            }, 1000);
+            notyf.success("Account created successfully");
         } else {
-            alert(res.data.message);
+            notyf.error(res.data.message);
         }
     } catch (err) {
         console.log(err);
@@ -43,11 +52,13 @@ const login = async () => {
         let loginPassword = document.getElementById("loginPassword").value;
         const res = await axios.post('http://localhost:3000/api/login', { loginEmail, loginPassword });
         if (res.data.status === 200) {
+            setTimeout(() => {
+                window.location.href = "home/home.html";
+            }, 1000);
+            notyf.success(res.data.message);
             localStorage.setItem("UID", JSON.stringify(res.data.user._id));
-            window.location.href = "home/home.html";
-            alert(res.data.message);
         } else {
-            alert("Invalid credentials");
+            notyf.error("Invalid credentials");
         }
     } catch (error) {
         console.log(error);
