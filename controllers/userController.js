@@ -44,35 +44,35 @@ const login = async (req, res) => {
     }
 }
 
-const signup = async (req, res) => {
-    try {
-        const { fullName, email, password } = req.body;
-        const isFound = await User.findOne({ email });
-        if (isFound) {
-            return res.send({
-                status: 505,
-                message: "User already exists",
-            });
+const signup = (req, res) => {
+    const { fullName, email, password } = req.body;
+    hashy.hash(password, async function (error, hash) {
+        if (error) {
+            return console.log(error);
         }
-        hashy.hash(password, function (error, hash) {
-            if (error) {
-                return console.log(error);
-            }
+        try {
             const newUser = new User({ fullName, email, password: hash });
-            newUser.save();
-            res.send({
+            await newUser.save();
+            res.status(200).send({
                 status: 200,
                 newUser,
                 message: "User has been created successfully"
             });
-        })
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            status: 500,
-            message: err.message,
-        });
-    }
+        } catch (err) {
+            if (err.code === 11000) {
+                return res.status(400).send({
+                    status: 400,
+                    success: false,
+                    message: "Email already exists. Please use another email"
+                });
+            }
+            res.status(500).json({
+                success: false,
+                status: 500,
+                message: "Internal Server Error",
+            });
+        }
+    });
 }
 
 module.exports = {getUsers, login, signup};

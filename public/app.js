@@ -6,13 +6,17 @@ let notyf = new Notyf({
     }
 });
 
-async function signup() {
+const signup = async () => {
     try {
         let fullName = document.getElementById("fullName").value;
         let email = document.getElementById("email").value;
         let password = document.getElementById("password").value;
         if (fullName.trim() == "" || email.trim() == "" || password.trim() == "") {
             notyf.error("Please fill out fields");
+            return;
+        }
+        if (password.length < 5) {
+            notyf.error("Password must be at least 5 characters long");
             return;
         }
         const res = await axios.post('http://localhost:3000/api/signup', { fullName, email, password });
@@ -25,7 +29,7 @@ async function signup() {
             notyf.error(res.data.message);
         }
     } catch (err) {
-        console.log(err);
+        notyf.error(err.response.data.message);
     }
 }
 
