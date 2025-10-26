@@ -24,6 +24,3 @@ A full-stack Blog Application that allows users to create, read, update, and del
 | MongoDB      | NoSQL database                   |
 | Mongoose     | MongoDB object modeling (ODM)    |
 
-## 📂 Project Structure (Basic)
-
-
