@@ -1,7 +1,10 @@
 
+const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const dotenv = require('dotenv');
 const hashy = require('hashy');
 const saltRounds = 10;
+dotenv.config();
 
 const getUsers = async (req, res) => {
     try {
@@ -15,19 +18,41 @@ const getUsers = async (req, res) => {
     }
 }
 
+const createToken = (user) => {
+    return jwt.sign({user}, process.env.JWTSECRETKEY, { expiresIn: "3d" });
+}
+
 const login = async (req, res) => {
     try {
         const { loginEmail, loginPassword } = req.body;
         const user = await User.findOne({ email: loginEmail });
+        if (!user) {
+            return res.send({
+                status: 404,
+                message: 'User not found',
+            });
+        }
         hashy.verify(loginPassword, user.password, function (error, success) {
             if (error) {
                 return console.error(err);
             }
             if (success) {
+                const token = createToken({
+                    fullName: user.fullName,
+                    email: user.email,
+                    role: user.role,
+                });
+                console.log(token);
+                const oneDay = 1000 * 60 * 60 * 24;
+                res.cookie("jwtToken", token, {
+                    httpOnly: true,
+                    maxAge: oneDay, // 1 day in milliseconds
+                });
                 return res.send({
                     status: 200,
                     user,
                     message: "User login successfully",
+                    token,
                 });
             } else {
                 return res.send({
@@ -45,13 +70,13 @@ const login = async (req, res) => {
 }
 
 const signup = (req, res) => {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, role } = req.body;
     hashy.hash(password, async function (error, hash) {
         if (error) {
             return console.log(error);
         }
         try {
-            const newUser = new User({ fullName, email, password: hash });
+            const newUser = new User({ fullName, email, password: hash, role });
             await newUser.save();
             res.status(200).send({
                 status: 200,
@@ -75,4 +100,28 @@ const signup = (req, res) => {
     });
 }
 
-module.exports = {getUsers, login, signup};
+async function home(req, res) {
+    const { user } = req.user;
+    console.log(user, "this is line 42");
+    try {
+        if (user.role === 'admin') {
+            location.href = '/public/dashboard/index.html';
+            return res.send({
+                status: 200,
+                message: "Welcome Admin",
+            });
+        }
+        res.send({
+            status: 200,
+            message: "Welcome User",
+        });
+    } catch (err) {
+        res.send({
+            err,
+            status: 500,
+            message: "Sorry! Server is not responding",
+        });
+    }
+}
+
+module.exports = { getUsers, login, signup, home };
