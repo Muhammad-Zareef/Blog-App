@@ -23,6 +23,8 @@ const createToken = (user) => {
 }
 
 const login = async (req, res) => {
+    const token = req.cookies;
+    console.log(token);
     try {
         const { loginEmail, loginPassword } = req.body;
         const user = await User.findOne({ email: loginEmail });
@@ -43,9 +45,11 @@ const login = async (req, res) => {
                     role: user.role,
                 });
                 console.log(token);
-                const oneDay = 1000 * 60 * 60 * 24;
+                const oneDay = 24 * 60 * 60 * 1000;
                 res.cookie("jwtToken", token, {
                     httpOnly: true,
+                    sameSite: "lax",
+                    secure: false,
                     maxAge: oneDay, // 1 day in milliseconds
                 });
                 return res.send({

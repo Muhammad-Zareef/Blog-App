@@ -11,6 +11,7 @@ const signup = async () => {
         let fullName = document.getElementById("fullName").value;
         let email = document.getElementById("email").value;
         let password = document.getElementById("password").value;
+        let role = document.getElementById("role").value;
         if (fullName.trim() == "" || email.trim() == "" || password.trim() == "") {
             notyf.error("Please fill out fields");
             return;
@@ -19,7 +20,11 @@ const signup = async () => {
             notyf.error("Password must be at least 5 characters long");
             return;
         }
-        const res = await axios.post('http://localhost:3000/api/signup', { fullName, email, password });
+        if (role === "") {
+            notyf.error("Please select your role");
+            return;
+        }
+        const res = await axios.post('http://localhost:3000/api/signup', { fullName, email, password, role });
         if (res.data.status == 200) {
             setTimeout(() => {
                 showForm('login');

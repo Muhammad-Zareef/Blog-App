@@ -6,6 +6,7 @@ const userRoutes = require('./routes/userRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const path = require('path');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 
 // load
@@ -15,8 +16,12 @@ const PORT = process.env.PORT || 3000;
 
 // body parser
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
+app.use(cors({
+    origin: ["http://localhost:5501", "http://127.0.0.1:5501"],
+    credentials: true,
+}));
 
 // connect to database
 connectDB();
