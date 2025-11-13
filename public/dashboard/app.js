@@ -1,4 +1,15 @@
 
+async function checkUserRole() {
+    try {
+        const res = await axios.get("http://localhost:3000/api/dashboard", { withCredentials: true });
+        console.log(res);
+        // return res.data.user.role;
+    } catch (err) {
+        window.location.href = "/index.html";
+        console.log(err);
+    }
+}
+
 console.log("Hello World!");
 
 const foo = async () => {

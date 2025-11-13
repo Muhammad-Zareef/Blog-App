@@ -2,6 +2,7 @@
 const express = require('express');
 const app = express();
 const connectDB = require('./config/db');
+const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const path = require('path');
@@ -19,13 +20,14 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors({
-    origin: ["http://localhost:5501", "http://127.0.0.1:5501"],
+    origin: ["http://localhost:3000", "http://127.0.0.1:5501"],
     credentials: true,
 }));
 
 // connect to database
 connectDB();
 
+app.use('/api', adminRoutes);
 app.use('/api', userRoutes);
 app.use('/api', blogRoutes);
 

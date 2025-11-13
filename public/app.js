@@ -59,13 +59,21 @@ const login = async () => {
     try {
         let loginEmail = document.getElementById("loginEmail").value;
         let loginPassword = document.getElementById("loginPassword").value;
-        const res = await axios.post('http://localhost:3000/api/login', { loginEmail, loginPassword });
+        const res = await axios.post('http://localhost:3000/api/login', { loginEmail, loginPassword }, { withCredentials: true });
+        console.log(res)
         if (res.data.status === 200) {
-            setTimeout(() => {
-                window.location.href = "home/home.html";
-            }, 1000);
-            notyf.success(res.data.message);
-            localStorage.setItem("UID", JSON.stringify(res.data.user._id));
+            if (res.data.user.role === "admin") {
+                setTimeout(() => {
+                    window.location.href = "dashboard/index.html";
+                }, 1000);
+                notyf.success(`Admin, ${res.data.message}`);
+            } else {
+                setTimeout(() => {
+                    window.location.href = "home/home.html";
+                }, 1000);
+                notyf.success(res.data.message);
+                localStorage.setItem("UID", JSON.stringify(res.data.user._id));
+            }
         } else {
             notyf.error("Invalid credentials");
         }
