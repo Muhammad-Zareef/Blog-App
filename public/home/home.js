@@ -1,27 +1,22 @@
 
+document.addEventListener("DOMContentLoaded", () => {
+    checkAuth();
+    getBlogsData();
+});
+
+async function checkAuth() {
+    try {
+        const res = await axios.get("http://localhost:3000/api/home", { withCredentials: true });
+        renderUserName(res.data.user);
+    } catch (err) {
+        window.location.href = "/index.html";
+        console.log(err);
+    }
+}
+
 const renderUserName = (user) => {
     let span = document.getElementsByClassName('user-welcome');
     span[0].innerHTML = `<i class="fas fa-user-circle me-1"></i>Welcome, ${user.fullName}!`;
-}
-
-const getUsersData = async () => {
-    try {
-        const uid = JSON.parse(localStorage.getItem("UID"));
-        if (uid) {
-            const res = await axios.get('http://localhost:3000/api/users');
-            for (let i = 0; i < res.data.length; i++) {
-                if (uid === res.data[i]._id) {
-                    renderUserName(res.data[i]);
-                    break;
-                }
-            }
-        } else {
-            logout();
-        }
-    } catch (error) {
-        console.log(error);
-        logout();
-    }
 }
 
 const getBlogsData = async () => {
@@ -62,16 +57,20 @@ const renderBlogs = blogs => {
     }
 }
 
-const logout = () => {
+const logout = async () => {
     Swal.fire({
         title: "Logged Out!",
         text: "You have been successfully logged out",
         icon: "success",
         showConfirmButton: false,
-        timer: 1500
+        timer: 1250
     });
-    setTimeout(() => {
-        location = '../index.html';
-    }, 1400);
-    localStorage.removeItem("UID");
+    try {
+        await axios.post("http://localhost:3000/api/logout", { withCredentials: true });
+        setTimeout(() => {
+            window.location.href = "/index.html";
+        }, 1000);
+    } catch (err) {
+        console.log(err);
+    }
 }

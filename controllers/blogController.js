@@ -63,4 +63,29 @@ const deleteBlog = async (req, res) => {
     }
 }
 
-module.exports = { getBlogs, createBlog, updateBlog, deleteBlog };
+const home = async (req, res) => {
+    const { user } = req.user;
+    try {
+        if (user.role === 'admin') {
+            // location.href = '/public/dashboard/index.html';
+            return res.send({
+                status: 200,
+                user,
+                message: "Welcome Admin",
+            });
+        }
+        res.send({
+            status: 200,
+            user,
+            message: "Welcome User",
+        });
+    } catch (err) {
+        res.send({
+            err,
+            status: 500,
+            message: "Sorry! Server is not responding",
+        });
+    }
+}
+
+module.exports = { getBlogs, createBlog, updateBlog, deleteBlog, home };

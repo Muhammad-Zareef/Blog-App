@@ -1,29 +1,25 @@
 
-const uid = JSON.parse(localStorage.getItem("UID"));
+document.addEventListener("DOMContentLoaded", () => {
+    checkAuth();
+    getBlogsData();
+});
+
+let user = null;
+
+async function checkAuth() {
+    try {
+        const res = await axios.get("http://localhost:3000/api/home", { withCredentials: true });
+        renderUserName(res.data.user);
+        user = res.data.user;
+    } catch (err) {
+        window.location.href = "/index.html";
+        console.log(err);
+    }
+}
 
 const renderUserName = (user) => {
     let span = document.getElementsByClassName('user-welcome');
     span[0].innerHTML = `<i class="fas fa-user-circle me-1"></i>Welcome, ${user.fullName}!`;
-}
-
-const getUsersData = async () => {
-    try {
-        const uid = JSON.parse(localStorage.getItem("UID"));
-        if (uid) {
-            const res = await axios.get('http://localhost:3000/api/users');
-            for (let i = 0; i < res.data.length; i++) {
-                if (uid === res.data[i]._id) {
-                    renderUserName(res.data[i]);
-                    break;
-                }
-            }
-        } else {
-            logout();
-        }
-    } catch (error) {
-        console.log(error);
-        logout();
-    }
 }
 
 const getBlogsData = async () => {
@@ -111,7 +107,7 @@ function renderBlogs(blogs) {
     blogPostsContainer.innerHTML = "";
     let hasPosts = false;
     for (let i = blogs.length-1; i >= 0; i--) {
-        if (blogs[i].uid === uid) {
+        if (blogs[i].uid === user.id) {
             hasPosts = true;
             blogPostsContainer.innerHTML += `
                 <div class="col-md-6 col-lg-4">
@@ -148,6 +144,7 @@ function renderBlogs(blogs) {
 
 document.getElementById('blogForm').addEventListener('submit', async function (event) {
     event.preventDefault();
+    const uid = user.id;
     try {
         let title = document.getElementById("blogTitle").value;
         let author = document.getElementById("blogAuthor").value;
@@ -176,16 +173,20 @@ document.getElementById('blogForm').addEventListener('submit', async function (e
     }
 });
 
-const logout = () => {
+const logout = async () => {
     Swal.fire({
         title: "Logged Out!",
         text: "You have been successfully logged out",
         icon: "success",
         showConfirmButton: false,
-        timer: 1100
+        timer: 1250
     });
-    setTimeout(() => {
-        location = '../../index.html';
-    }, 1000);
-    localStorage.removeItem("UID");
+    try {
+        await axios.post("http://localhost:3000/api/logout", { withCredentials: true });
+        setTimeout(() => {
+            window.location.href = "/index.html";
+        }, 1000);
+    } catch (err) {
+        console.log(err);
+    }
 }

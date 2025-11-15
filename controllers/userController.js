@@ -126,4 +126,31 @@ async function home(req, res) {
     }
 }
 
-module.exports = { getUsers, login, signup, home };
+const checkUserRole = async (req, res) => {
+    const { user } = req.user;
+    console.log(user);
+    if (user.role === 'admin') {
+        return res.send({
+            status: 200,
+            user,
+            message: "Welcome Admin",
+        });
+    } else {
+        res.send({
+            status: 200,
+            user,
+            message: "Welcome User",
+        });
+    }
+}
+
+const logout = (req, res) => {
+    res.clearCookie("jwtToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None"
+    });
+    res.json({ message: "Logged out successfully" });
+};
+
+module.exports = { getUsers, login, signup, home, logout, checkUserRole };

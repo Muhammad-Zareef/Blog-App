@@ -1,4 +1,21 @@
 
+document.addEventListener("DOMContentLoaded", () => {
+    checkAuth();
+});
+
+async function checkAuth() {
+    try {
+        const res = await axios.post("http://localhost:3000/api/verifyToken", { withCredentials: true });
+        if (res.data.user.role === "admin") {
+            window.location.href = "dashboard/index.html";
+        } else {
+            window.location.href = "home/home.html";
+        }
+    } catch (err) {
+        
+    }
+}
+
 let notyf = new Notyf({
     position: {
         x: 'left',
@@ -35,23 +52,6 @@ const signup = async () => {
         }
     } catch (err) {
         notyf.error(err.response.data.message);
-    }
-}
-
-const getData = async () => {
-    try {
-        let uid = JSON.parse(localStorage.getItem("UID")) || false;
-        if (uid) {
-            const res = await axios.get('http://localhost:3000/api/users');
-            for (let i = 0; i < res.data.length; i++) {
-                if (res.data[i]._id === uid) {
-                    location.href = './home/home.html';
-                    break;
-                }
-            }
-        }
-    } catch (error) {
-        console.log(error);
     }
 }
 
