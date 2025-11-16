@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middlewares/verifyToken');
 const verifyAdmin = require('../middlewares/verifyAdmin');
+const { getUsersAndBlogs, getBlogs, updateBlog, deleteBlog } = require('../controllers/adminController');
 
 router.get("/dashboard", verifyToken, verifyAdmin, (req, res) => {
     res.json({
@@ -10,5 +11,9 @@ router.get("/dashboard", verifyToken, verifyAdmin, (req, res) => {
     });
 });
 
+router.get('/getUsersAndBlogs', getUsersAndBlogs);
+router.get('/getBlogs', getBlogs);
+router.put('/updateBlog/:id', updateBlog);
+router.delete('/deleteBlog/:id', deleteBlog);
 
 module.exports = router;

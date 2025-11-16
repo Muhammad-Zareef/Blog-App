@@ -27,7 +27,7 @@ app.use(cors({
 // connect to database
 connectDB();
 
-app.use('/api', adminRoutes);
+app.use('/admin', adminRoutes);
 app.use('/api', userRoutes);
 app.use('/api', blogRoutes);
 
