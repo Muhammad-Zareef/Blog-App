@@ -397,7 +397,7 @@
                         <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
                         <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item" href="#" id="logout-button"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -617,6 +617,50 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="savePostChanges">
+                        <i class="fas fa-save me-1"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update User Modal -->
+    <div class="modal fade update-post-modal" id="updateUserModal" tabindex="-1" aria-labelledby="updateUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updatePostModalLabel">
+                        <i class="fas fa-edit me-2"></i>Update User
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updatePostForm">
+                        <input type="hidden" id="userId" name="userId">
+                        <!-- Title Field -->
+                        <div class="mb-3">
+                            <label for="userName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="userName" placeholder="Enter name" value="Getting Started with React Hooks">
+                        </div>
+                        
+                        <!-- Author Field -->
+                        <div class="mb-3">
+                            <label for="userEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="userEmail" placeholder="Enter email" value="Getting Started with React Hooks">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label required-field">Role</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="admin">Administrator</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="savePostChanges" onclick="updateUser()">
                         <i class="fas fa-save me-1"></i>Save Changes
                     </button>
                 </div>
