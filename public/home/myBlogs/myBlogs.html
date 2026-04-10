@@ -37,26 +37,30 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-2">
         <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-blog me-2"></i>BlogApp
-            </a>
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="#"><i class="fas fa-blog me-2"></i>BlogApp</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="../home.html">Home</a>
+                        <a class="nav-link fw-semibold" href="../home.html">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">My Blogs</a>
+                        <a class="nav-link active fw-semibold" href="#">My Blogs</a>
                     </li>
                 </ul>
-                <div class="d-flex align-items-center">
-                    <span class="user-welcome"></span>
-                    <button class="btn btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i>Logout</button>
+                <form class="d-flex me-3" style="max-width: 240px;">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-sm" placeholder="Search blogs..." id="searchInput" />
+                        <button class="btn btn-primary btn-sm" type="button" id="searchBtn"><i class="fas fa-search"></i></button>
+                    </div>
+                </form>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="user-welcome text-white small fw-semibold"></span>
+                    <button class="btn btn-outline-light btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i>Logout</button>
                 </div>
             </div>
         </div>
@@ -64,7 +68,6 @@
 
     <div class="container py-5">
         <h1 class="page-title">Share Your Thoughts</h1>
-        
         <div class="blog-form mb-5">
             <form id="blogForm">
                 <div class="row">
@@ -81,11 +84,25 @@
                     <label for="blogDescription" class="form-label"><i class="fas fa-align-left blog-icon"></i>Blog Description</label>
                     <textarea class="form-control" id="blogDescription" rows="5" placeholder="Write your blog content here..." required></textarea>
                 </div>
+                <div class="container mt-4">
+                    <label class="form-label">Upload Image</label>
+                    <div class="mb-3">
+                        <input class="form-control" type="file" id="blogImage" accept="image/*">
+                    </div>
+                </div>
                 <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Submit Blog</button>
             </form>
         </div>
-        
-        <h2 class="mb-4"><i class="fas fa-blog me-2"></i>Your Recent Blog Posts</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h2 class="m-0 d-flex align-items-center"><i class="fas fa-blog me-2"></i>Your Recent Blog Posts</h2>
+            <div class="d-flex align-items-center gap-2">
+                <label for="filter" class="fw-semibold mb-0">Sort by:</label>
+                <select id="filter" class="form-select form-select-sm w-auto" onchange="filterBlogs()">
+                    <option value="latest">Latest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+            </div>
+        </div>
         <div class="row" id="blogPosts"></div>
     </div>
 
@@ -94,15 +111,12 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="updatePostModalLabel">
-                        <i class="fas fa-blog me-2"></i>Update Blog Post
-                    </h5>
+                    <h5 class="modal-title" id="updatePostModalLabel"><i class="fas fa-blog me-2"></i>Update Blog Post</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="updatePostForm">
                         <input type="hidden" id="postId" name="postId">
-                        
                         <div class="mb-3">
                             <label for="postTitle" class="form-label">
                                 <i class="fas fa-heading me-1 blog-icon"></i>Blog Title
@@ -112,7 +126,6 @@
                                 <input type="text" class="form-control" id="postTitle" name="postTitle" placeholder="Enter blog title" required>
                             </div>
                         </div>
-                        
                         <div class="mb-3">
                             <label for="postAuthor" class="form-label">
                                 <i class="fas fa-user me-1 blog-icon"></i>Author
@@ -122,7 +135,6 @@
                                 <input type="text" class="form-control" id="postAuthor" name="postAuthor" placeholder="Enter author name" required>
                             </div>
                         </div>
-                        
                         <div class="mb-3">
                             <label for="postDescription" class="form-label">
                                 <i class="fas fa-align-left me-1 blog-icon"></i>Description
@@ -130,6 +142,12 @@
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-file-alt"></i></span>
                                 <textarea class="form-control" id="postDescription" name="postDescription" rows="5" placeholder="Enter blog description" required></textarea>
+                            </div>
+                        </div>
+                        <div class="mt-4 mb-3">
+                            <label for="blogImage" class="form-label">Upload Image</label>
+                            <div class="mb-3">
+                                <input class="form-control" type="file" id="updateBlogImage" accept="image/*">
                             </div>
                         </div>
                     </form>

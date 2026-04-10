@@ -1,5 +1,6 @@
 
 const Blog = require('../models/blogModel');
+const Like = require('../models/likeModel');
 
 const getBlogs = async (req, res) => {
     try {
@@ -63,6 +64,59 @@ const deleteBlog = async (req, res) => {
     }
 }
 
+const search = async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) {
+            return res.status(400).json({
+                message: "Search query is required"
+            });
+        }
+        const blogs = await Blog.find({
+            title: { $regex: query, $options: "i" } // case-insensitive search
+        });
+        res.json({
+            success: true,
+            count: blogs.length,
+            blogs
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
+
+const getLikes = async (req, res) => {
+    try {
+        const likes = await Like.find();
+        res.status(200).json(likes);
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+
+const saveLikes = async (req, res) => {
+    try {
+        const { likes } = req.body;
+        const newLikes = new Like({ likes });
+        await newLikes.save();
+        res.send({
+            success: true,
+            newLikes
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+
 const home = async (req, res) => {
     const { user } = req.user;
     try {
@@ -88,4 +142,4 @@ const home = async (req, res) => {
     }
 }
 
-module.exports = { getBlogs, createBlog, updateBlog, deleteBlog, home };
+module.exports = { getBlogs, createBlog, updateBlog, deleteBlog, search, getLikes, saveLikes, home };
