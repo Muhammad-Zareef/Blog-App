@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { getBlogs, createBlog, updateBlog, deleteBlog, search, getLikes, saveLikes, home } = require('../controllers/blogController');
+const { getBlogs, createBlog, updateBlog, deleteBlog, search, getLikes, updateLikes, home } = require('../controllers/blogController');
 const verifyToken = require('../middlewares/verifyToken');
 
 router.get('/home', verifyToken, home);
@@ -11,6 +11,6 @@ router.put('/updateBlog/:id', updateBlog);
 router.delete('/deleteBlog/:id', deleteBlog);
 router.get('/search', search);
 router.get('/likes', getLikes);
-router.post('/saveLikes', saveLikes);
+router.put('/updateLikes/:id', updateLikes);
 
 module.exports = router;

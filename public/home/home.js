@@ -1,7 +1,8 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
     await checkAuth();
-    getBlogsData();
+    await getBlogsData();
+    renderLikes();
 });
 
 let currentUser = "";
@@ -60,8 +61,8 @@ const renderBlogs = (blogs, order = "latest") => {
                         <div class="d-flex justify-content-between">
                             <small class="text-muted"><i class="fas fa-clock me-1"></i>${timeAgo(blogs[i].createdAt)}</small>
                             <div>
-                                <button class="btn btn-sm btn-outline-primary me-1" id="like-btn-${blogs[i].id}" onclick="likePost(${blogs[i].id})"><i class="fas fa-thumbs-up"></i></button>
-                                <span id="like-count-${blogs[i].id}"></span>
+                                <button class="btn btn-sm btn-outline-primary me-1" id="like-btn-${blogs[i]._id}" onclick="likePost('${blogs[i]._id}')"><i class="fas fa-thumbs-up"></i></button>
+                                <span id="like-count-${blogs[i]._id}"></span>
                                 <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-comment"></i></button>
                             </div>
                         </div>
@@ -139,25 +140,27 @@ function initSearch() {
 const getLikes = async () => {
     try {
         const res = await axios.get('http://localhost:3000/api/likes');
-        console.log(res.data);
-        return res.data.likes;
+        // console.log('getLikes', res.data[0].likes);
+        return res.data[0].likes;
     } catch (error) {
         console.log(error);
     }
 }
 
-let likes = getLikes();
+// let likes = getLikes();
 
-async function saveLikes(likes) {
+const updateLikes = async (likes) => {
+    const id = '69da1ac13648905e69a9cad3';
     try {
-        const res = await axios.post('http://localhost:3000/api/saveLikes', { likes });
-        console.log(res)
+        const res = await axios.put(`http://localhost:3000/api/updateLikes/${id}`, { likes: likes });
+        console.log(res);
     } catch (error) {
         console.log(error);
     }
 }
 
-const likePost = (blogId) => {
+const likePost = async (blogId) => {
+    let likes = await getLikes();
     if (!likes[blogId]) {
         likes[blogId] = [];
     }
@@ -172,13 +175,13 @@ const likePost = (blogId) => {
     } else {
         likes[blogId].push(currentUser.id);
     }
-    saveLikes(likes);
+    await updateLikes(likes);
     updateLikeUI(blogId);
 }
 
 async function updateLikeUI(blogId) {
-    let likes = await getLikes;
-    const likeBtn = document.querySelector(`button[onclick="likePost(${blogId})"]`);
+    let likes = await getLikes();
+    const likeBtn = document.querySelector(`button[onclick="likePost('${blogId}')"]`);
     const countSpan = document.getElementById(`like-count-${blogId}`);
     if (!countSpan) {
         return;
@@ -203,9 +206,14 @@ async function updateLikeUI(blogId) {
     }
 }
 
-function renderLikes () {
-    for (let i = 0; i < blogs.length; i++) {
-        updateLikeUI(blogs[i].id);
+async function renderLikes() {
+    try {
+        const res = await axios.get('http://localhost:3000/api/blogs');
+        for (let i = 0; i < res.data.length; i++) {
+            updateLikeUI(res.data[i]._id);
+        }
+    } catch (error) {
+        console.log(error);
     }
 }
 

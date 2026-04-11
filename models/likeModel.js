@@ -1,13 +1,13 @@
 
 const { Schema, model } = require("mongoose");
 
-const LikeSchema = new Schema({
+const LikesSchema = new Schema({
     likes: {
         type: Object,
         required: true,
     }
 });
 
-const LikeModel = model("Like", LikeSchema);
+const LikesModel = model("Likes", LikesSchema);
 
-module.exports = LikeModel;
+module.exports = LikesModel;

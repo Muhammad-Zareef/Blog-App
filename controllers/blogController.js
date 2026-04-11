@@ -1,6 +1,6 @@
 
 const Blog = require('../models/blogModel');
-const Like = require('../models/likeModel');
+const Likes = require('../models/likeModel');
 
 const getBlogs = async (req, res) => {
     try {
@@ -90,7 +90,8 @@ const search = async (req, res) => {
 
 const getLikes = async (req, res) => {
     try {
-        const likes = await Like.find();
+        const likes = await Likes.find();
+        // console.log(likes)
         res.status(200).json(likes);
     } catch (err) {
         res.status(500).json({
@@ -100,14 +101,17 @@ const getLikes = async (req, res) => {
     }
 }
 
-const saveLikes = async (req, res) => {
+const updateLikes = async (req, res) => {
     try {
+        const { id } = req.params;
+        // console.log(id)
         const { likes } = req.body;
-        const newLikes = new Like({ likes });
-        await newLikes.save();
-        res.send({
-            success: true,
-            newLikes
+        // console.log('line 126', {likes})
+        const updatedLikes = await Likes.findByIdAndUpdate(id, {likes}, { new: true });
+        // console.log(updatedLikes)
+        res.status(200).json({
+            message: "Likes updated successfully!",
+            // likes: updatedLikes.likes
         });
     } catch (err) {
         res.status(500).json({
@@ -142,4 +146,4 @@ const home = async (req, res) => {
     }
 }
 
-module.exports = { getBlogs, createBlog, updateBlog, deleteBlog, search, getLikes, saveLikes, home };
+module.exports = { getBlogs, createBlog, updateBlog, deleteBlog, search, getLikes, updateLikes, home };
