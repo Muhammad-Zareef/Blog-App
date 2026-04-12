@@ -1,6 +1,13 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
     await checkAuth();
+    let blogPostsContainer = document.getElementById("blogPosts");
+    blogPostsContainer.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary me-2" role="status"></div>
+            <span class="text-dark fs-4">Loading...</span>
+        </div>
+    `;
     await getBlogsData();
     renderLikes();
     initSearch();
@@ -33,7 +40,7 @@ const getBlogsData = async () => {
     }
 }
 
-const renderBlogs = (blogs, order = "latest") => {
+const renderBlogs = (blogs) => {
     let blogPostsContainer = document.getElementById("blogPosts");
     blogPostsContainer.innerHTML = "";
     let hasPosts = false;
@@ -72,6 +79,13 @@ const renderBlogs = (blogs, order = "latest") => {
 }
 
 const filterBlogs = async () => {
+    let blogPostsContainer = document.getElementById("blogPosts");
+    blogPostsContainer.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary me-2" role="status"></div>
+            <span class="text-dark fs-4">Loading...</span>
+        </div>
+    `;
     let filter = document.getElementById("filter").value;
     if (filter === "latest") {
         try {
@@ -96,6 +110,13 @@ const filterBlogs = async () => {
 }
 
 const searchBlog = async () =>  {
+    let blogPostsContainer = document.getElementById("blogPosts");
+    blogPostsContainer.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary me-2" role="status"></div>
+            <span class="text-dark fs-4">Loading...</span>
+        </div>
+    `;
     let input = document.getElementById('searchInput');
     if (input.value.trim() == "") {
         input.value = "";
@@ -103,8 +124,6 @@ const searchBlog = async () =>  {
         renderLikes();
         return;
     }
-    let blogPostsContainer = document.getElementById("blogPosts");
-    blogPostsContainer.innerHTML = "";
     try {
         const res = await axios.get(`http://localhost:3000/api/search?query=${input.value}`);
         console.log(res);
@@ -146,7 +165,6 @@ function initSearch() {
 const getLikes = async () => {
     try {
         const res = await axios.get('http://localhost:3000/api/likes');
-        // console.log('getLikes', res.data[0].likes);
         return res.data[0].likes;
     } catch (error) {
         console.log(error);
@@ -263,10 +281,6 @@ async function getMostLikedBlogId() {
     }
 }
 
-function getBlogById(blogId, blogs) {
-    return blogs.find(blog => blog.id == blogId);
-}
-
 function timeAgo(timestamp) {
     const time = new Date(timestamp).getTime();
     const seconds = Math.floor((Date.now() - time) / 1000);
@@ -290,19 +304,31 @@ function timeAgo(timestamp) {
 }
 
 const logout = async () => {
-    Swal.fire({
-        title: "Logged Out!",
-        text: "You have been successfully logged out",
-        icon: "success",
-        showConfirmButton: false,
-        timer: 1250
-    });
     try {
-        await axios.post("http://localhost:3000/api/logout", { withCredentials: true });
-        setTimeout(() => {
-            window.location.href = "/index.html";
-        }, 1000);
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You will be logged out of your account",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, logout"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await axios.post("http://localhost:3000/api/logout", { withCredentials: true });
+                Swal.fire({
+                    title: "Logged out!",
+                    text: "You have been successfully logged out",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                setTimeout(() => {
+                    window.location.href = "/index.html";
+                }, 1000);
+            }
+        });
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 }

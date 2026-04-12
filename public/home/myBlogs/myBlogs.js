@@ -1,7 +1,14 @@
 
-document.addEventListener("DOMContentLoaded", () => {
-    checkAuth();
-    getBlogsData();
+document.addEventListener("DOMContentLoaded", async () => {
+    await checkAuth();
+    let blogPostsContainer = document.getElementById("blogPosts");
+    blogPostsContainer.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary me-2" role="status"></div>
+            <span class="text-dark fs-4">Loading...</span>
+        </div>
+    `;
+    await getBlogsData();
     initSearch();
 });
 
@@ -25,20 +32,25 @@ const renderUserName = (user) => {
 
 const getBlogsData = async () => {
     try {
-        const res = await axios.get('http://localhost:3000/api/blogs');
+        const res = await axios.get('http://localhost:3000/api/userBlogs', { withCredentials: true });
         renderBlogs(res.data);
     } catch (error) {
         console.log(error);
     }
 }
 
-const openUpdateModal = (id, title, author, description) => {
-    document.getElementById('postId').value = id;
-    document.getElementById('postTitle').value = title;
-    document.getElementById('postAuthor').value = author;
-    document.getElementById('postDescription').value = description;
-    const updateModal = new bootstrap.Modal(document.getElementById('updatePostModal'));
-    updateModal.show();
+const openUpdateModal = async (id) => {
+    try {
+        const res = await axios.get(`http://localhost:3000/api/blogs/${id}`);
+        document.getElementById('postId').value = id;
+        document.getElementById('postTitle').value = res.data.blog.title;
+        document.getElementById('postAuthor').value = res.data.blog.author;
+        document.getElementById('postDescription').value = res.data.blog.desc;
+        const updateModal = new bootstrap.Modal(document.getElementById('updatePostModal'));
+        updateModal.show();
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 const updateBlog = async () => {
@@ -89,7 +101,7 @@ const updateBlog = async () => {
             getBlogsData();
         }
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -126,30 +138,28 @@ function renderBlogs(blogs, order = "latest") {
     blogPostsContainer.innerHTML = "";
     let hasPosts = false;
     for (let i = 0; i < blogs.length; i++) {
-        if (blogs[i].uid === currentUser.id) {
-            hasPosts = true;
-            blogPostsContainer.innerHTML += `
-                <div class="col-md-6 col-lg-4">
-                    <div class="card blog-card">
-                        <img src="${blogs[i].imgURL}" class="card-img-top" alt="${blogs[i].title} Image By ${blogs[i].author}" style="height: 230px; border-top-left-radius: 7px; border-top-right-radius: 7px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">${blogs[i].title}</h5>
-                            <p class="text-muted"><i class="fas fa-user me-2"></i>By ${blogs[i].author}</p>
-                            <p class="card-text">${blogs[i].desc}</p>
-                        </div>
-                        <div class="card-footer bg-white">
-                            <div class="d-flex justify-content-between">
-                                <small class="text-muted"><i class="fas fa-clock me-1"></i>${timeAgo(blogs[i].createdAt)}</small>
-                                <div>
-                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="openUpdateModal('${blogs[i]._id}', '${blogs[i].title}', '${blogs[i].author}', '${blogs[i].desc}', '${blogs[i].imgURL}')"><i class="fas fa-edit" title="Edit"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBlog(${blogs[i]._id})"><i class="fas fa-trash delete-btn" title="Delete"></i></button>
-                                </div>
+        hasPosts = true;
+        blogPostsContainer.innerHTML += `
+            <div class="col-md-6 col-lg-4">
+                <div class="card blog-card">
+                    <img src="${blogs[i].imgURL}" class="card-img-top" alt="${blogs[i].title} Image By ${blogs[i].author}" style="height: 230px; border-top-left-radius: 7px; border-top-right-radius: 7px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">${blogs[i].title}</h5>
+                        <p class="text-muted"><i class="fas fa-user me-2"></i>By ${blogs[i].author}</p>
+                        <p class="card-text">${blogs[i].desc}</p>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted"><i class="fas fa-clock me-1"></i>${timeAgo(blogs[i].createdAt)}</small>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="openUpdateModal('${blogs[i]._id}')"><i class="fas fa-edit" title="Edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteBlog(${blogs[i]._id})"><i class="fas fa-trash delete-btn" title="Delete"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
-            `;
-        }
+            </div>
+        `;
     }
     if (!hasPosts) {
         blogPostsContainer.innerHTML = `
@@ -161,18 +171,21 @@ function renderBlogs(blogs, order = "latest") {
 }
 
 const searchBlog = async () =>  {
+    let blogPostsContainer = document.getElementById("blogPosts");
+    blogPostsContainer.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary me-2" role="status"></div>
+            <span class="text-dark fs-4">Loading...</span>
+        </div>
+    `;
     let input = document.getElementById('searchInput');
     if (input.value.trim() == "") {
         input.value = "";
         getBlogsData();
-        renderLikes();
         return;
     }
-    let blogPostsContainer = document.getElementById("blogPosts");
-    blogPostsContainer.innerHTML = "";
     try {
         const res = await axios.get(`http://localhost:3000/api/searchWithUserId?query=${input.value}`);
-        console.log(res);
         let blog = [];
         let isFound = false;
         for (let i = 0; i < res.data.blogs.length; i++) {
@@ -190,7 +203,6 @@ const searchBlog = async () =>  {
             return;
         }
         renderBlogs(blog);
-        renderLikes();
     } catch (error) {
         console.error(error);
     }
@@ -209,17 +221,24 @@ function initSearch() {
 }
 
 const filterBlogs = async () => {
+    let blogPostsContainer = document.getElementById("blogPosts");
+    blogPostsContainer.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary me-2" role="status"></div>
+            <span class="text-dark fs-4">Loading...</span>
+        </div>
+    `;
     let filter = document.getElementById("filter").value;
     if (filter === "latest") {
         try {
-            const res = await axios.get('http://localhost:3000/api/blogs');
+            const res = await axios.get('http://localhost:3000/api/userBlogs');
             renderBlogs(res.data);
         } catch (error) {
             console.error(error);
         }
     } else if (filter === "oldest") {
         try {
-            const res = await axios.get('http://localhost:3000/api/oldestBlogs');
+            const res = await axios.get('http://localhost:3000/api/oldestBlogsOfUser');
             renderBlogs(res.data);
         } catch (error) {
             console.error(error);
@@ -290,19 +309,31 @@ document.getElementById('blogForm').addEventListener('submit', async function (e
 });
 
 const logout = async () => {
-    Swal.fire({
-        title: "Logged Out!",
-        text: "You have been successfully logged out",
-        icon: "success",
-        showConfirmButton: false,
-        timer: 1250
-    });
     try {
-        await axios.post("http://localhost:3000/api/logout", { withCredentials: true });
-        setTimeout(() => {
-            window.location.href = "/index.html";
-        }, 1000);
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You will be logged out of your account",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, logout"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await axios.post("http://localhost:3000/api/logout", { withCredentials: true });
+                Swal.fire({
+                    title: "Logged out!",
+                    text: "You have been successfully logged out",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                setTimeout(() => {
+                    window.location.href = "/index.html";
+                }, 1000);
+            }
+        });
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 }

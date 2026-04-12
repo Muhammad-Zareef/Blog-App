@@ -27,6 +27,19 @@ const getOldestBlogs = async (req, res) => {
     }
 }
 
+const getOldestBlogsWithUserId = async (req, res) => {
+    try {
+        const { user } = req.user;
+        const blogs = await Blog.find({ uid: user.id }).sort({ createdAt: 1 });
+        res.status(200).json(blogs);
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+
 const getBlogById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -49,14 +62,12 @@ const getBlogById = async (req, res) => {
 
 const getBlogsByUserId = async (req, res) => {
     try {
-        const { uid } = req.user;
-        console.log(uid)
-        // const blogs = await Blog.find({ uid }).sort({ createdAt: -1 });
-        // if (blogs.length === 0) {
-        //     return res.status(404).json({ message: "No blogs found for this user" });
-        // }
-        // res.status(200).json(blogs);
-        res.status(200);
+        const { user } = req.user;
+        const blogs = await Blog.find({ uid: user.id }).sort({ createdAt: -1 });
+        if (blogs.length === 0) {
+            return res.status(404).json({ message: "No blogs found for this user" });
+        }
+        res.status(200).json(blogs);
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: "Server error" });
@@ -147,12 +158,11 @@ const searchWithUserId = async (req, res) => {
             });
         }
         const blogs = await Blog.find({
-            uid: user._id,
+            uid: user.id,
             title: { $regex: query, $options: "i" } // case-insensitive search
         });
         res.json({
             success: true,
-            count: blogs.length,
             blogs
         });
     } catch (err) {
@@ -221,4 +231,4 @@ const home = async (req, res) => {
     }
 }
 
-module.exports = { getBlogs, getOldestBlogs, getBlogById, getBlogsByUserId, createBlog, updateBlog, deleteBlog, search, searchWithUserId, getLikes, updateLikes, home };
+module.exports = { getBlogs, getOldestBlogs, getOldestBlogsWithUserId, getBlogById, getBlogsByUserId, createBlog, updateBlog, deleteBlog, search, searchWithUserId, getLikes, updateLikes, home };
