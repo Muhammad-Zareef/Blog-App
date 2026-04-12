@@ -2,6 +2,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     checkAuth();
     getBlogsData();
+    initSearch();
 });
 
 let user = null;
@@ -50,6 +51,7 @@ const updateBlog = async () => {
         const title = document.getElementById('postTitle').value;
         const author = document.getElementById('postAuthor').value;
         const desc = document.getElementById('postDescription').value;
+        let img = document.querySelector("#updateBlogImage");
         if (!title || !author || !desc) {
             Swal.fire({
                 icon: "error",
@@ -60,15 +62,32 @@ const updateBlog = async () => {
         }
         const updateModal = bootstrap.Modal.getInstance(document.getElementById('updatePostModal'));
         updateModal.hide();
-        const res = await axios.put(`http://localhost:3000/api/updateBlog/${id}`, {title, author, desc});
-        Swal.fire({
-            title: "Updated Successfully",
-            text: "Your changes have been saved",
-            icon: "success",
-            showConfirmButton: false,
-            timer: 2000
-        });
-        getBlogsData();
+        if (img.files.length > 0) {
+            const reader = new FileReader();
+            reader.readAsDataURL(img.files[0]);
+            reader.onload = async function (e) {
+                img = e.target.result;
+                const res = await axios.put(`http://localhost:3000/api/updateBlog/${id}`, { title, author, desc, imgURL: img });
+                Swal.fire({
+                    title: "Updated Successfully",
+                    text: "Your changes have been saved",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                getBlogsData();
+            }
+        } else {
+            const res = await axios.put(`http://localhost:3000/api/updateBlog/${id}`, { title, author, desc });
+            Swal.fire({
+                title: "Updated Successfully",
+                text: "Your changes have been saved",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 2000
+            });
+            getBlogsData();
+        }
     } catch (error) {
         console.log(error);
     }
@@ -102,29 +121,28 @@ const deleteBlog = (id) => {
     }
 }
 
-function renderBlogs(blogs) {
+function renderBlogs(blogs, order = "latest") {
     let blogPostsContainer = document.getElementById("blogPosts");
     blogPostsContainer.innerHTML = "";
     let hasPosts = false;
-    for (let i = blogs.length-1; i >= 0; i--) {
-        if (blogs[i].uid === user.id) {
+    for (let i = 0; i < blogs.length; i++) {
+        if (blogs[i].uid === currentUser.id) {
             hasPosts = true;
             blogPostsContainer.innerHTML += `
                 <div class="col-md-6 col-lg-4">
                     <div class="card blog-card">
-                        <div class="card-header">
-                            <h5 class="card-title text-white mb-0">${blogs[i].title}</h5>
-                        </div>
+                        <img src="${blogs[i].imgURL}" class="card-img-top" alt="${blogs[i].title} Image By ${blogs[i].author}" style="height: 230px; border-top-left-radius: 7px; border-top-right-radius: 7px; object-fit: cover;">
                         <div class="card-body">
+                            <h5 class="card-title mb-3">${blogs[i].title}</h5>
                             <p class="text-muted"><i class="fas fa-user me-2"></i>By ${blogs[i].author}</p>
                             <p class="card-text">${blogs[i].desc}</p>
                         </div>
                         <div class="card-footer bg-white">
                             <div class="d-flex justify-content-between">
-                                <small class="text-muted"><i class="fas fa-clock me-1"></i>${new Date(blogs[i].createdAt).toLocaleString()}</small>
+                                <small class="text-muted"><i class="fas fa-clock me-1"></i>${timeAgo(blogs[i].createdAt)}</small>
                                 <div>
-                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="openUpdateModal('${blogs[i]._id}', '${blogs[i].title}', '${blogs[i].author}', '${blogs[i].desc}')"><i class="fas fa-edit" title="Edit"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBlog('${blogs[i]._id}')"><i class="fas fa-trash delete-btn" title="Delete"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="openUpdateModal('${blogs[i]._id}', '${blogs[i].title}', '${blogs[i].author}', '${blogs[i].desc}', '${blogs[i].imgURL}')"><i class="fas fa-edit" title="Edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBlog(${blogs[i]._id})"><i class="fas fa-trash delete-btn" title="Delete"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -142,6 +160,95 @@ function renderBlogs(blogs) {
     }
 }
 
+const searchBlog = async () =>  {
+    let input = document.getElementById('searchInput');
+    if (input.value.trim() == "") {
+        input.value = "";
+        getBlogsData();
+        renderLikes();
+        return;
+    }
+    let blogPostsContainer = document.getElementById("blogPosts");
+    blogPostsContainer.innerHTML = "";
+    try {
+        const res = await axios.get(`http://localhost:3000/api/searchWithUserId?query=${input.value}`);
+        console.log(res);
+        let blog = [];
+        let isFound = false;
+        for (let i = 0; i < res.data.blogs.length; i++) {
+            if ((res.data.blogs[i].title).toLowerCase() == input.value.toLowerCase()) {
+                blog.push(res.data.blogs[i]);
+                isFound = true;
+            }
+        }
+        if (!isFound) {
+            blogPostsContainer.innerHTML = `
+                <div class="col-12 text-center my-5">
+                    <h4 class="text-muted">No blog posts found for your search</h4>
+                </div>
+            `;
+            return;
+        }
+        renderBlogs(blog);
+        renderLikes();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function initSearch() {
+    const input = document.getElementById("searchInput");
+    const btn = document.getElementById("searchBtn");
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            searchBlog();
+        }
+    });
+    btn.addEventListener("click", searchBlog);
+}
+
+const filterBlogs = async () => {
+    let filter = document.getElementById("filter").value;
+    if (filter === "latest") {
+        try {
+            const res = await axios.get('http://localhost:3000/api/blogs');
+            renderBlogs(res.data);
+        } catch (error) {
+            console.error(error);
+        }
+    } else if (filter === "oldest") {
+        try {
+            const res = await axios.get('http://localhost:3000/api/oldestBlogs');
+            renderBlogs(res.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+}
+
+function timeAgo(timestamp) {
+    const time = new Date(timestamp).getTime();
+    const seconds = Math.floor((Date.now() - time) / 1000);
+    const intervals = {
+        year: 31536000,
+        month: 2592000,
+        week: 604800,
+        day: 86400,
+        hour: 3600,
+        minute: 60,
+        second: 1
+    };
+    for (let key in intervals) {
+        const value = intervals[key];
+        if (seconds >= value) {
+            const count = Math.floor(seconds / value);
+            return `${count} ${key}${count > 1 ? 's' : ''} ago`;
+        }
+    }
+    return "just now";
+}
+
 document.getElementById('blogForm').addEventListener('submit', async function (event) {
     event.preventDefault();
     const uid = user.id;
@@ -149,7 +256,8 @@ document.getElementById('blogForm').addEventListener('submit', async function (e
         let title = document.getElementById("blogTitle").value;
         let author = document.getElementById("blogAuthor").value;
         let desc = document.getElementById("blogDescription").value;
-        if (title.trim() == "" || author.trim() == "" || desc.trim() == "") {
+        let img = document.querySelector('#blogImage').files[0];
+        if (title.trim() == "" || author.trim() == "" || desc.trim() == "" || !img) {
             Swal.fire({
                 icon: "error",
                 title: "Missing Information!",
@@ -158,15 +266,23 @@ document.getElementById('blogForm').addEventListener('submit', async function (e
             this.reset();
             return;
         }
-        const res = await axios.post('http://localhost:3000/api/postBlog', { title, author, desc, uid });
-        Swal.fire({
-            title: "Blog Published!",
-            text: "Your blog post has been published successfully",
-            icon: "success",
-            showConfirmButton: false,
-            timer: 2000
-        });
-        getBlogsData();
+        if (img) {
+            const reader = new FileReader();
+            reader.readAsDataURL(img);
+            reader.onload = async function(e) {
+                const imgURL = e.target.result;
+                blogs.push({ title, author, desc, id: Date.now(), uid, imgURL, createdAt: Date.now() });
+                const res = await axios.post('http://localhost:3000/api/postBlog', { title, author, desc, uid, imgURL });
+                Swal.fire({
+                    title: "Blog Published!",
+                    text: "Your blog post has been published successfully",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                getBlogsData();
+            }
+        }
         this.reset();
     } catch (error) {
         console.log(error);

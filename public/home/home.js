@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await checkAuth();
     await getBlogsData();
     renderLikes();
+    initSearch();
 });
 
 let currentUser = "";
@@ -36,17 +37,7 @@ const renderBlogs = (blogs, order = "latest") => {
     let blogPostsContainer = document.getElementById("blogPosts");
     blogPostsContainer.innerHTML = "";
     let hasPosts = false;
-    let start, end, step;
-    if (order === "latest") {
-        start = blogs.length - 1;
-        end = -1;
-        step = -1;
-    } else {
-        start = 0;
-        end = blogs.length;
-        step = 1;
-    }
-    for (let i = start; i !== end; i += step) {
+    for (let i = 0; i < blogs.length; i++) {
         hasPosts = true;
         blogPostsContainer.innerHTML += `
             <div class="col-md-6 col-lg-4">
@@ -80,49 +71,64 @@ const renderBlogs = (blogs, order = "latest") => {
     }
 }
 
-const filterBlogs = () => {
+const filterBlogs = async () => {
     let filter = document.getElementById("filter").value;
     if (filter === "latest") {
-        renderBlogs(blogs);
-        renderLikes();
-    }
-    else if (filter === "oldest") {
-        renderBlogs(blogs, filter);
-        renderLikes();
+        try {
+            const res = await axios.get('http://localhost:3000/api/blogs');
+            renderBlogs(res.data);
+            renderLikes();
+        } catch (error) {
+            console.error(error);
+        }
+    } else if (filter === "oldest") {
+        try {
+            const res = await axios.get('http://localhost:3000/api/oldestBlogs');
+            renderBlogs(res.data);
+            renderLikes();
+        } catch (error) {
+            console.error(error);
+        }
     } else {
         showMostLikedBlog();
         renderLikes();
     }
 }
 
-const searchBlog = () =>  {
+const searchBlog = async () =>  {
     let input = document.getElementById('searchInput');
     if (input.value.trim() == "") {
         input.value = "";
-        renderBlogs(blogs);
+        getBlogsData();
         renderLikes();
         return;
     }
     let blogPostsContainer = document.getElementById("blogPosts");
     blogPostsContainer.innerHTML = "";
-    let blog = [];
-    let isFound = false;
-    for (let i = 0; i < blogs.length; i++) {
-        if ((blogs[i].title).toLowerCase() == input.value.toLowerCase()) {
-            blog.push(blogs[i]);
-            isFound = true;
+    try {
+        const res = await axios.get(`http://localhost:3000/api/search?query=${input.value}`);
+        console.log(res);
+        let blog = [];
+        let isFound = false;
+        for (let i = 0; i < res.data.blogs.length; i++) {
+            if ((res.data.blogs[i].title).toLowerCase() == input.value.toLowerCase()) {
+                blog.push(res.data.blogs[i]);
+                isFound = true;
+            }
         }
+        if (!isFound) {
+            blogPostsContainer.innerHTML = `
+                <div class="col-12 text-center my-5">
+                    <h4 class="text-muted">No blog posts found for your search</h4>
+                </div>
+            `;
+            return;
+        }
+        renderBlogs(blog);
+        renderLikes();
+    } catch (error) {
+        console.error(error);
     }
-    if (!isFound) {
-        blogPostsContainer.innerHTML = `
-            <div class="col-12 text-center my-5">
-                <h4 class="text-muted">No blog posts found for your search</h4>
-            </div>
-        `;
-        return;
-    }
-    renderBlogs(blog);
-    renderLikes();
 }
 
 function initSearch() {
@@ -217,8 +223,8 @@ async function renderLikes() {
     }
 }
 
-function showMostLikedBlog() {
-    const mostLikedId = getMostLikedBlogId();
+async function showMostLikedBlog() {
+    const mostLikedId = await getMostLikedBlogId();
     if (!mostLikedId) {
         let blogPostsContainer = document.getElementById("blogPosts");
         blogPostsContainer.innerHTML = `
@@ -228,25 +234,33 @@ function showMostLikedBlog() {
         `;
         return;
     }
-    const blog = getBlogById(mostLikedId, blogs);
-    if (!blog) return alert("Blog not found!");
-
-    renderBlogs([blog]);  // send as single-blog array
-    renderLikes();
+    try {
+        const res = await axios.get(`http://localhost:3000/api/blogs/${mostLikedId}`);
+        if (!res.data.blog) return alert("Blog not found!");
+        renderBlogs([res.data.blog]);  // send as single-blog array
+        renderLikes();
+    } catch (error) {
+        console.error(error);
+    }
 }
 
-function getMostLikedBlogId() {
-    let likes = JSON.parse(localStorage.getItem("likes")) || {};
-    let topBlogId = null;
-    let maxLikes = -1;
-    for (let blogId in likes) {
-        let count = likes[blogId].length;
-        if (count > maxLikes) {
-            maxLikes = count;
-            topBlogId = blogId;
+async function getMostLikedBlogId() {
+    try {
+        const res = await axios.get('http://localhost:3000/api/likes');
+        let likes = res.data[0].likes || {};
+        let topBlogId = null;
+        let maxLikes = -1;
+        for (let blogId in likes) {
+            let count = likes[blogId].length;
+            if (count > maxLikes) {
+                maxLikes = count;
+                topBlogId = blogId;
+            }
         }
+        return topBlogId;
+    } catch (error) {
+        console.log(error);
     }
-    return topBlogId;
 }
 
 function getBlogById(blogId, blogs) {
