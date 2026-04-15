@@ -77,7 +77,7 @@ const getBlogsByUserId = async (req, res) => {
 const createBlog = async (req, res) => {
     try {
         const { title, author, desc, uid } = req.body;
-        const newBlog = new Blog({ title, author, desc, uid });
+        const newBlog = new Blog({ title, author, desc, image: req.file.path, uid });
         await newBlog.save();
         res.send({
             success: true,

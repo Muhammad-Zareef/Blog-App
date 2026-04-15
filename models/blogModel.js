@@ -4,23 +4,27 @@ const { Schema, model } = require("mongoose");
 const BlogSchema = new Schema({
     title: {
         type: String,
-        required: true,
+        required: true
     },
     author: {
         type: String,
-        required: true,
+        required: true
     },
     desc: {
         type: String,
-        required: true,
+        required: true
+    },
+    image: {
+        type: String,
+        required: true
     },
     uid: {
         type: String,
-        required: true,
+        required: true
     },
     createdAt: {
         type: Date,
-        default: Date.now,
+        default: Date.now
     },
 });
 

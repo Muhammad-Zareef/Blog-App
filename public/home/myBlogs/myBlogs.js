@@ -133,7 +133,7 @@ const deleteBlog = (id) => {
     }
 }
 
-function renderBlogs(blogs, order = "latest") {
+function renderBlogs(blogs) {
     let blogPostsContainer = document.getElementById("blogPosts");
     blogPostsContainer.innerHTML = "";
     let hasPosts = false;
@@ -142,7 +142,7 @@ function renderBlogs(blogs, order = "latest") {
         blogPostsContainer.innerHTML += `
             <div class="col-md-6 col-lg-4">
                 <div class="card blog-card">
-                    <img src="${blogs[i].imgURL}" class="card-img-top" alt="${blogs[i].title} Image By ${blogs[i].author}" style="height: 230px; border-top-left-radius: 7px; border-top-right-radius: 7px; object-fit: cover;">
+                    <img src="${blogs[i].image}" class="card-img-top" alt="${blogs[i].title} Image By ${blogs[i].author}" style="width: 100%; height: auto; border-top-left-radius: 7px; border-top-right-radius: 7px;">
                     <div class="card-body">
                         <h5 class="card-title mb-3">${blogs[i].title}</h5>
                         <p class="text-muted"><i class="fas fa-user me-2"></i>By ${blogs[i].author}</p>
@@ -282,26 +282,36 @@ document.getElementById('blogForm').addEventListener('submit', async function (e
                 title: "Missing Information!",
                 text: "Please fill in all required fields"
             });
-            this.reset();
             return;
         }
-        if (img) {
-            const reader = new FileReader();
-            reader.readAsDataURL(img);
-            reader.onload = async function(e) {
-                const imgURL = e.target.result;
-                blogs.push({ title, author, desc, id: Date.now(), uid, imgURL, createdAt: Date.now() });
-                const res = await axios.post('http://localhost:3000/api/postBlog', { title, author, desc, uid, imgURL });
-                Swal.fire({
-                    title: "Blog Published!",
-                    text: "Your blog post has been published successfully",
-                    icon: "success",
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-                getBlogsData();
-            }
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("author", author);
+        formData.append("desc", desc);
+        formData.append("uid", uid);
+        formData.append("image", img);
+        try {
+            const res = await axios.post('http://localhost:3000/api/postBlog', formData);
+            console.log(res);
+            Swal.fire({
+                title: "Blog Published!",
+                text: "Your blog post has been published successfully",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 2000
+            });
+            getBlogsData();
+        } catch (error) {
+            console.error(error);
         }
+        // if (img) {
+        //     const reader = new FileReader();
+        //     reader.readAsDataURL(img);
+        //     reader.onload = async function(e) {
+        //         const imgURL = e.target.result;
+        //         // blogs.push({ title, author, desc, uid, imgURL, createdAt: Date.now() });
+        //     }
+        // }
         this.reset();
     } catch (error) {
         console.log(error);

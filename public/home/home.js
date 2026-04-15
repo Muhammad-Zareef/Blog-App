@@ -49,7 +49,7 @@ const renderBlogs = (blogs) => {
         blogPostsContainer.innerHTML += `
             <div class="col-md-6 col-lg-4">
                 <div class="card blog-card">
-                    <img src="${blogs[i].imgURL}" class="card-img-top" alt="${blogs[i].title} Image By ${blogs[i].author}" style="height: 230px; border-top-left-radius: 7px; border-top-right-radius: 7px; object-fit: cover;">
+                    <img src="${blogs[i].image}" class="card-img-top" alt="${blogs[i].title} Image By ${blogs[i].author}" style="width: 100%; height: auto; border-top-left-radius: 7px; border-top-right-radius: 7px;">
                     <div class="card-body">
                         <h5 class="card-title mb-3">${blogs[i].title}</h5>
                         <p class="text-muted"><i class="fas fa-user me-2"></i>By ${blogs[i].author}</p>
