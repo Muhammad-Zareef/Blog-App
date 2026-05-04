@@ -142,7 +142,7 @@ function renderBlogs(blogs) {
         blogPostsContainer.innerHTML += `
             <div class="col-md-6 col-lg-4">
                 <div class="card blog-card">
-                    <img src="${blogs[i].image}" class="card-img-top" alt="${blogs[i].title} Image By ${blogs[i].author}" style="width: 100%; height: auto; border-top-left-radius: 7px; border-top-right-radius: 7px;">
+                    <img src="${blogs[i].image}" loading="lazy" class="card-img-top" alt="${blogs[i].title} Image By ${blogs[i].author}" style="width: 100%; height: auto; border-top-left-radius: 7px; border-top-right-radius: 7px;">
                     <div class="card-body">
                         <h5 class="card-title mb-3">${blogs[i].title}</h5>
                         <p class="text-muted"><i class="fas fa-user me-2"></i>By ${blogs[i].author}</p>
@@ -268,6 +268,25 @@ function timeAgo(timestamp) {
     return "just now";
 }
 
+document.querySelector('#blogImage').addEventListener('change', function (e) {
+    let img = e.target.files[0];
+    if (img) {
+        const reader = new FileReader();
+        reader.readAsDataURL(img);
+        reader.onload = async function(e) {
+            const imgURL = e.target.result;
+            document.getElementById('newImage').innerHTML = `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card">
+                        <img src="${imgURL}" class="card-img-top" alt="" style="width: 100%; height: auto; border-top-left-radius: 7px; border-top-right-radius: 7px;" />
+                    </div>
+                </div>
+            `
+        }
+    }
+    
+});
+
 document.getElementById('blogForm').addEventListener('submit', async function (event) {
     event.preventDefault();
     const uid = user.id;
@@ -304,14 +323,6 @@ document.getElementById('blogForm').addEventListener('submit', async function (e
         } catch (error) {
             console.error(error);
         }
-        // if (img) {
-        //     const reader = new FileReader();
-        //     reader.readAsDataURL(img);
-        //     reader.onload = async function(e) {
-        //         const imgURL = e.target.result;
-        //         // blogs.push({ title, author, desc, uid, imgURL, createdAt: Date.now() });
-        //     }
-        // }
         this.reset();
     } catch (error) {
         console.log(error);
